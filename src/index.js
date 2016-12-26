@@ -1,22 +1,55 @@
-import dva, { connect } from 'dva';
-import { Router, Route } from 'dva/router';
+import dva, {connect} from 'dva';
+import {Router, Route} from 'dva/router';
 import fetch from 'dva/fetch';
+import styles from './index.less';
 import React from 'react';
 import './index.html';
 
-// 1. Initialize
+console.log(styles);
+
 const app = dva();
 
-// 2. Model
-// Remove the comment and define your model.
-//app.model({});
+app.model({
+    namespace: 'count',
+    state: {
+        record: 0,
+        current: 0
+    },
+    reducers: {
+        add(state){
+            const newCurrent = state.current + 1;
+            return {...state, record: newCurrent > state.record ? newCurrent : state.record, current: newCurrent};
+        },
+        minus(state){
+            return {...state, current: state.current - 1};
+        }
+    }
+});
 
-// 3. Router
-const HomePage = () => <div>Hello Dva.</div>;
-app.router(({ history }) =>
-  <Router history={history}>
-    <Route path="/" component={HomePage} />
-  </Router>
+const CountApp = ({count, dispatch}) => {
+    return (
+        <div className={styles.normal}>
+            <div className={styles.record}>Highest Record:{count.record}</div>
+            <div className={styles.current}>{count.current}</div>
+            <div className={styles.button}>
+                <button onClick={() => {
+                    dispatch({type: 'count/add'});
+                }}>+
+                </button>
+            </div>
+        </div>
+    );
+};
+
+//连接 model 和 Component
+function mapStateToProps(state) {
+    return {count: state.count};
+}
+const HomePage = connect(mapStateToProps)(CountApp);
+app.router(({history}) =>
+    <Router history={history}>
+        <Route path="/" component={HomePage}/>
+    </Router>
 );
 
 // 4. Start
